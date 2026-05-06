@@ -9,7 +9,7 @@
  * 
  */
 
-bool MMR_CAN_LoadConfig(const std::string& filename, std::vector<MmrCanSignal>& signals) {
+bool MMR_CAN_LoadConfig(const std::string& filename, std::vector<FrequencyGroup>& groups) {
     FILE* file = fopen(filename.c_str(), "r");
     if (!file) {
         printf("[ERROR] Can't open config file: %s\n", filename.c_str());
@@ -47,11 +47,33 @@ bool MMR_CAN_LoadConfig(const std::string& filename, std::vector<MmrCanSignal>& 
             continue;
         }
 
-        printf("[DEBUG] Line %d: 0x%hX,%hhu,%hhu,%hhu\n", line_number, can_id, size, start, freq);
-        signals.emplace_back(can_id, size, start, freq);
+        // printf("[DEBUG] Line %d: 0x%hX,%hhu,%hhu,%hhu\n", line_number, can_id, size, start, freq);
+
+        // Checks if there is an existing group with same frequency as the current signal
+        auto it = std::find_if(groups.begin(), groups.end(),
+            [freq](const FrequencyGroup& g) {
+                return g.frequency == freq;
+            }
+        );
+
+        if (it == groups.end()) {
+            // Create a new group
+            FrequencyGroup group;
+            group.frequency = freq;
+            group.signals.emplace_back(can_id, size, start, freq);
+            groups.push_back(group);
+        } else {
+            // Append the current signal to an existing one
+            it->signals.emplace_back(can_id, size, start, freq);
+        }
     }
 
     fclose(file);
-    printf("[INFO] Loaded %zu signals from %s\n", signals.size(), filename.c_str());
-    return !signals.empty();
+
+    printf("[INFO] Loaded %zu frequency groups:\n", groups.size());
+    for (const auto& group : groups) {
+        printf("[INFO]  %d Hz -> %zu signals\n", group.frequency, group.signals.size());
+    }
+
+    return !groups.empty();
 }
