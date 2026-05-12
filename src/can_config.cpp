@@ -76,3 +76,28 @@ bool CAN_LoadConfig(const std::string& filename, std::vector<FrequencyGroup>& gr
 
     return !groups.empty();
 }
+
+/**
+ * This function is supposed to be called after the CAN_LoadConfig in order to
+ * give to the UDP sender the max packet size that is expected to send.
+ */
+uint16_t CAN_CalcMaxPacketSize(const std::vector<FrequencyGroup>& groups) {
+    uint16_t max_size = 0;
+
+    for (const auto& group: groups) {
+        // header: 1 (frequency) + 4 (timestamp)
+        uint16_t packet_size = 5;
+
+        for (const auto& signal : group.signals) {
+            // equivalent to ceil(size / 8)
+            packet_size += (signal.getSize() + 7) / 8; 
+        }
+
+        if (packet_size > max_size) {
+            max_size = packet_size;
+        }
+    }
+
+    printf("[INFO] Max packet size: %hu bytes\n", max_size);
+    return max_size;
+}

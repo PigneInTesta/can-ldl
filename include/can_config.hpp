@@ -15,6 +15,6 @@ struct FrequencyGroup {
 };
 
 bool CAN_LoadConfig(const std::string& filename, std::vector<FrequencyGroup>& signals);
-void CAN_CalcMaxPacketSize(const std::string& filename);
+uint16_t CAN_CalcMaxPacketSize(const std::vector<FrequencyGroup>& groups);
 
 #endif // CAN_CONFIG_HPP

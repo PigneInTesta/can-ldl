@@ -24,6 +24,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    uint16_t max_packet_size = CAN_CalcMaxPacketSize(groups);
+
     // unsigned int count = 0;
     // for (const auto& group: groups) {
     //     for (const auto& signal : group.signals) {
@@ -37,6 +39,5 @@ int main(int argc, char* argv[]) {
     //     }
     // }
 
-    
     return 0;
 }
