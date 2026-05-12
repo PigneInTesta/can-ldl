@@ -1,7 +1,7 @@
 CXX      = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -I include
 
-SRC      = src/mmr_can_config.cpp \
+SRC      = src/can_config.cpp \
            src/main.cpp
 
 OBJ      = $(SRC:.cpp=.o)
