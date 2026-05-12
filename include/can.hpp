@@ -1,11 +1,11 @@
-#ifndef MMR_CAN_HPP
-#define MMR_CAN_HPP
+#ifndef CAN_HPP
+#define CAN_HPP
 
 #include <cstdint>
 
-class MmrCanSignal {
+class CanSignal {
 public:
-    MmrCanSignal(uint16_t id, uint8_t size, uint8_t start, uint8_t freq) 
+    CanSignal(uint16_t id, uint8_t size, uint8_t start, uint8_t freq) 
         : m_can_id(id)
         , m_size(size)
         , m_bit_start(start)
@@ -33,4 +33,4 @@ private:
     uint64_t m_payload;
 };
 
-#endif // MMR_CAN_HPP
+#endif // CAN_HPP

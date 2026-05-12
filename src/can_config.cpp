@@ -1,4 +1,4 @@
-#include "mmr_can_config.hpp"
+#include "can_config.hpp"
 
 /**
  * Load the .csv file containing all the CAN messages with their respective
@@ -8,8 +8,7 @@
  * | can_id | size | bit_start | frequency |
  * 
  */
-
-bool MMR_CAN_LoadConfig(const std::string& filename, std::vector<FrequencyGroup>& groups) {
+bool CAN_LoadConfig(const std::string& filename, std::vector<FrequencyGroup>& groups) {
     FILE* file = fopen(filename.c_str(), "r");
     if (!file) {
         printf("[ERROR] Can't open config file: %s\n", filename.c_str());
@@ -70,10 +69,10 @@ bool MMR_CAN_LoadConfig(const std::string& filename, std::vector<FrequencyGroup>
 
     fclose(file);
 
-    printf("[INFO] Loaded %zu frequency groups:\n", groups.size());
-    for (const auto& group : groups) {
-        printf("[INFO]  %d Hz -> %zu signals\n", group.frequency, group.signals.size());
-    }
+    // printf("[INFO] Loaded %zu frequency groups:\n", groups.size());
+    // for (const auto& group : groups) {
+    //     printf("[INFO]  %d Hz -> %zu signals\n", group.frequency, group.signals.size());
+    // }
 
     return !groups.empty();
 }
