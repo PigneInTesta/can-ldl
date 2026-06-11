@@ -1,4 +1,15 @@
 #include "can_config.hpp"
+#include "can_sender.hpp"
+#include "can_reader.hpp"
+#include <thread>
+#include <csignal>
+#include <atomic>
+
+static std::atomic<bool> stop(false);
+
+void signalHandler(int) {
+    stop.store(true);
+}
 
 int main(int argc, char* argv[]) {
     if (argc != 5) {
@@ -16,28 +27,24 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     uint16_t udp_port = static_cast<uint16_t>(raw_port);
-
+    
+    
     std::vector<FrequencyGroup> groups;
-
     if (!CAN_LoadConfig(config_file, groups)) {
         printf("[ERROR] Failed to load config\n");
         return 1;
     }
 
-    uint16_t max_packet_size = CAN_CalcMaxPacketSize(groups);
+    std::signal(SIGINT, signalHandler);
+    std::signal(SIGTERM, signalHandler);
 
-    // unsigned int count = 0;
-    // for (const auto& group: groups) {
-    //     for (const auto& signal : group.signals) {
-    //         printf("[DEBUG] Signal %u: 0x%hX,%hhu,%hhu,%hhu\n", 
-    //             count, 
-    //             signal.getId(), 
-    //             signal.getSize(),
-    //             signal.getStart(),
-    //             signal.getFrequency());
-    //         count++;
-    //     }
-    // }
+    // WIP, reader thread not closing properly 
+    std::thread reader(CAN_ReaderThread, std::ref(groups), can_interface, std::ref(stop));
+    std::thread sender(CAN_SenderThread, std::ref(groups), udp_ip, udp_port, std::ref(stop));
 
+    reader.join();
+    sender.join();
+
+    printf("[INFO] Shutdown complete\n");
     return 0;
 }

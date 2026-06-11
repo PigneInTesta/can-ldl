@@ -51,53 +51,31 @@ bool CAN_LoadConfig(const std::string& filename, std::vector<FrequencyGroup>& gr
         // Checks if there is an existing group with same frequency as the current signal
         auto it = std::find_if(groups.begin(), groups.end(),
             [freq](const FrequencyGroup& g) {
-                return g.frequency == freq;
+                return g.getFrequency() == freq;
             }
         );
 
         if (it == groups.end()) {
             // Create a new group
-            FrequencyGroup group;
-            group.frequency = freq;
-            group.signals.emplace_back(can_id, size, start, freq);
-            groups.push_back(group);
+            FrequencyGroup group(freq);
+            group.m_signals.emplace_back(can_id, size, start, freq);
+            groups.push_back(std::move(group));
         } else {
             // Append the current signal to an existing one
-            it->signals.emplace_back(can_id, size, start, freq);
+            it->m_signals.emplace_back(can_id, size, start, freq);
         }
     }
 
     fclose(file);
 
-    // printf("[INFO] Loaded %zu frequency groups:\n", groups.size());
-    // for (const auto& group : groups) {
-    //     printf("[INFO]  %d Hz -> %zu signals\n", group.frequency, group.signals.size());
-    // }
-
-    return !groups.empty();
-}
-
-/**
- * This function is supposed to be called after the CAN_LoadConfig in order to
- * give to the UDP sender the max packet size that is expected to send.
- */
-uint16_t CAN_CalcMaxPacketSize(const std::vector<FrequencyGroup>& groups) {
-    uint16_t max_size = 0;
-
-    for (const auto& group: groups) {
-        // header: 1 (frequency) + 4 (timestamp)
-        uint16_t packet_size = 5;
-
-        for (const auto& signal : group.signals) {
-            // equivalent to ceil(size / 8)
-            packet_size += (signal.getSize() + 7) / 8; 
-        }
-
-        if (packet_size > max_size) {
-            max_size = packet_size;
-        }
+    // Initialize all groups after loading
+    for (auto& group : groups) {
+        group.init();
+        printf("[INFO] %d Hz -> %zu signals -> %hu bytes\n",
+            group.getFrequency(),
+            group.m_signals.size(),
+            group.getPacketSize());
     }
 
-    printf("[INFO] Max packet size: %hu bytes\n", max_size);
-    return max_size;
+    return !groups.empty();
 }
