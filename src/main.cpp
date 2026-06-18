@@ -28,7 +28,6 @@ int main(int argc, char* argv[]) {
     }
     uint16_t udp_port = static_cast<uint16_t>(raw_port);
     
-    
     std::vector<FrequencyGroup> groups;
     if (!CAN_LoadConfig(config_file, groups)) {
         printf("[ERROR] Failed to load config\n");
@@ -38,7 +37,6 @@ int main(int argc, char* argv[]) {
     std::signal(SIGINT, signalHandler);
     std::signal(SIGTERM, signalHandler);
 
-    // WIP, reader thread not closing properly 
     std::thread reader(CAN_ReaderThread, std::ref(groups), can_interface, std::ref(stop));
     std::thread sender(CAN_SenderThread, std::ref(groups), udp_ip, udp_port, std::ref(stop));
 
