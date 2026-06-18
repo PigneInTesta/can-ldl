@@ -1,10 +1,6 @@
 # Custom
 .vscode/
 config/
-can_logger
-*.txt
-*.csv
-*.json
 
 # Prerequisites
 *.d
