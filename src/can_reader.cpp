@@ -1,4 +1,5 @@
 #include "can_reader.hpp"
+#include <cerrno>
 #include <cstdio>
 #include <cstring>
 #include <unistd.h>
@@ -52,6 +53,10 @@ void CAN_ReaderThread(std::vector<FrequencyGroup>& groups, const char* can_inter
         return;
     }
 
+    // Set receive timeout so the loop can check stop flag
+    struct timeval timeout = {1, 0};  // 1 second
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+
     struct sockaddr_can addr;
     memset(&addr, 0, sizeof(addr));
     addr.can_family = AF_CAN;
@@ -73,6 +78,7 @@ void CAN_ReaderThread(std::vector<FrequencyGroup>& groups, const char* can_inter
         ssize_t nbytes = read(sock, &frame, sizeof(frame));
 
         if (nbytes < 0) {
+
             printf("[ERROR] Failed to read from CAN socket\n");
             stop.store(true);
             break;

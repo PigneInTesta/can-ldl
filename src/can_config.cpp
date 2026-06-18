@@ -15,7 +15,7 @@ bool CAN_LoadConfig(const std::string& filename, std::vector<FrequencyGroup>& gr
         return false;
     }
 
-    char line[64];
+    char line[128];
     unsigned int line_number = 0;
 
     // Skip header row
@@ -27,10 +27,16 @@ bool CAN_LoadConfig(const std::string& filename, std::vector<FrequencyGroup>& gr
 
         uint16_t can_id;
         uint8_t size, start, freq;
+        char name[CAN_SIGNAL_NAME_MAX] = "";
+        double offset = 0.0, scaler = 1.0;
+        char unit[CAN_SIGNAL_UNIT_MAX] = "";
 
-        int ret = sscanf(line, "0x%hx,%hhu,%hhu,%hhu", &can_id, &size, &start, &freq);
+        int ret = sscanf(line, "0x%hx,%hhu,%hhu,%hhu,%31[^,],%lf,%lf,%7s", 
+            &can_id, &size, &start, &freq, name, &offset, &scaler, unit);
 
-        if (ret != 4) {
+        printf("[PARSE] name=%s offset=%f scaler=%f unit=%s ret=%d\n", name, offset, scaler, unit, ret);
+        
+        if (ret < 7) {
             // Not an error - could be an empty line
             continue;
         }
@@ -46,7 +52,7 @@ bool CAN_LoadConfig(const std::string& filename, std::vector<FrequencyGroup>& gr
             continue;
         }
 
-        // printf("[DEBUG] Line %d: 0x%hX,%hhu,%hhu,%hhu\n", line_number, can_id, size, start, freq);
+        // printf("[DEBUG] Line %d: 0x%hX,%hhu,%hhu,%hhu\n", line_number, can_id, size, start, freq, name, offset, scaler, unit);
 
         // Checks if there is an existing group with same frequency as the current signal
         auto it = std::find_if(groups.begin(), groups.end(),
@@ -58,11 +64,11 @@ bool CAN_LoadConfig(const std::string& filename, std::vector<FrequencyGroup>& gr
         if (it == groups.end()) {
             // Create a new group
             FrequencyGroup group(freq);
-            group.m_signals.emplace_back(can_id, size, start, freq);
+            group.m_signals.emplace_back(can_id, size, start, freq, name, offset, scaler, unit);
             groups.push_back(std::move(group));
         } else {
             // Append the current signal to an existing one
-            it->m_signals.emplace_back(can_id, size, start, freq);
+            it->m_signals.emplace_back(can_id, size, start, freq, name, offset, scaler, unit);
         }
     }
 
