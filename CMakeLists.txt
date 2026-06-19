@@ -4,7 +4,15 @@ project(can_logger LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_compile_options(-Wall -Wextra)
+add_compile_options(-Wall -Wextra -Wpedantic)
+
+set(DEBUG OFF)
+
+if(DEBUG)
+    message(STATUS "can_logger: DEBUG prints ENABLED")
+else()
+    message(STATUS "can_logger: DEBUG prints DISABLED")
+endif()
 
 include_directories(include)
 
